@@ -53,7 +53,7 @@ los params
 2.- Crear un endpoint para obtener 
 el area de un triangulo por medio de 
 los query
-3.- Crear un enppoint para obtener 
+3.- Crear un endpoint para obtener 
 el area de un triangulo por medio del body
 
 4.- Crear un endpoint para obtener 
@@ -104,11 +104,6 @@ app.post('/rectangulo', (request, response, next) => {
     
     response.status(201).send({ area: (lado*altura) });
 });
-
-
-
-
-
 
 app.listen(3001, () => {
     console.log('Server on port 3001.');    
