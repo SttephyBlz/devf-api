@@ -1,110 +1,59 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const { Pelicula } = require('./pelicula');
 
 const app = express();
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json());
 
-
-app.get('/', (request, response, next) => {
-    response.send({ message: 'hola.' });
+app.get('/', (req, res) => {
+    res.send({ message: 'Server On C:' })
 });
 
-app.get('/home', (request, response, next) => {
-    response.send({ message: 'Mensaje desde home.'});
+app.post('/create/pelicula', (req, res) => {
+    const { titulo, anio, sinopsis, genero, portadas_url } = req.body;
+    const newPelicula = Pelicula({
+        titulo,
+        anio,
+        sinopsis,
+        genero,
+        portadas_url
+    });
+    newPelicula.save((err, pelicula) => {
+        err
+            ? res.status(409).send(err)
+            : res.send(pelicula);
+    });
 });
 
-//http://localhost:3001/users/123
-app.get('/users/:id', (request, response, next) => {
-    // const id = req.params.id
-    const { id } = request.params; //son lo mismo siempre y cuando se llamen igual destructuración de datos o.o
-
-    response.send({ message: `Id buscado: ${id}` });
+app.get('/all/peliculas', (req, res) => {
+    Pelicula.find().exec()
+        .then(peliculas => res.send(peliculas))
+        .catch(err => res.send(err));
 });
 
-//http://localhost:3001/search?query=asd&a=asdasd&b=34
-app.get('/search', (request, response, next) => {
-
-    const { query, a, b } = request.query;
-
-    response.send({ query, a, b });
+app.get('/pelicula/:id', (req, res) => {
+    const { id } = req.params;
+    Pelicula.findById(id).exec()
+        .then(pelicula => pelicula ? res.send(pelicula) : res.status(404).send({ message: 'No se encontró' }))
+        .catch(err => res.status(409).send(err));
 });
 
-app.post('/users', (request, response, next) => {
-
-    const { name, age, job } = request.body;
-    
-    response.status(201).send({ id: '1', name, age, job });
+app.put('/pelicula/:id', (req, res) => {
+    const { id } = req.params;
+    Pelicula.findByIdAndUpdate(id, { $set: req.body }, { new: true }).exec()
+        .then(pelicula => res.send(pelicula))
+        .catch(err => res.status(409).send(err));
 });
 
-app.patch('/users', (request, response, next) => {
-    const { name, age, job } = request.body;
-    
-    response.send({ name, age, job });
+app.delete('/pelicula/:id', (req, res) => {
+    const { id } = req.params;
+    Pelicula.findByIdAndDelete(id).exec()
+        .then(pelicula => res.send(pelicula))
+        .catch(err => res.status(409).send(err));
 });
 
-
-/*
-
-1.- Crear un endpoint para obtener 
-el area de un triangulo por medio de 
-los params
-2.- Crear un endpoint para obtener 
-el area de un triangulo por medio de 
-los query
-3.- Crear un endpoint para obtener 
-el area de un triangulo por medio del body
-
-4.- Crear un endpoint para obtener 
-el area de un rectangulo por medio de 
-los params
-5.- Crear un endpoint para obtener 
-el area de un rectangulo por medio de 
-los query
-6.- Crear un enppoint para obtener 
-el area de un rectangulo por medio del body
-
-*/
-
-app.get('/triangulo/:lado/:altura', (request, response, next) => {
-    const { lado, altura } = request.params; 
-
-    response.send({ message: `Área: ${(lado*altura)/2}` });
-});
-
-app.get('/triangulo', (request, response, next) => {
-    const { lado, altura } = request.query; 
-
-    response.send({ message: `Área: ${(lado*altura)/2}` });
-});
-
-app.post('/triangulo', (request, response, next) => {
-
-    const { lado, altura } = request.body;
-    
-    response.status(201).send({ area: ((lado*altura)/2) });
-});
-
-app.get('/rectangulo/:lado/:altura', (request, response, next) => {
-    const { lado, altura } = request.params; 
-
-    response.send({ message: `Área: ${lado*altura}` });
-});
-
-app.get('/rectangulo', (request, response, next) => {
-    const { lado, altura } = request.query; 
-
-    response.send({ message: `Área: ${lado*altura}` });
-});
-
-app.post('/rectangulo', (request, response, next) => {
-
-    const { lado, altura } = request.body;
-    
-    response.status(201).send({ area: (lado*altura) });
-});
-
-app.listen(3001, () => {
-    console.log('Server on port 3001.');    
+app.listen(3000, () => {
+    console.log(`server on port ${3000}`);
 });
